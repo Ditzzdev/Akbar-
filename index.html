@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="id">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TKJ Quiz Master</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-blur {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .blur-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .circle1 {
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .circle2 {
+            width: 350px;
+            height: 350px;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 2s;
+        }
+
+        .circle3 {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Start Screen */
+        .start-screen {
+            text-align: center;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-title {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 40px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        .welcome-text {
+            font-size: 24px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 18px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            outline: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .name-input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .start-btn {
+            padding: 20px 60px;
+            font-size: 22px;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .start-btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .start-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Quiz Screen */
+        .quiz-screen {
+            width: 100%;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-info {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .score-display {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question-text {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 20px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
+        .option-btn:hover {
+            transform: translateX(10px);
+        }
+
+        .option-btn.correct {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.8);
+            animation: pulse 0.5s ease-out;
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.8);
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-10px);
+            }
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .next-btn {
+            padding: 18px 50px;
+            font-size: 20px;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: none;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .next-btn.show {
+            display: block;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Result Screen */
+        .result-screen {
+            text-align: center;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: rotate 2s ease-in-out infinite;
+        }
+
+        @keyframes rotate {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-10deg);
+            }
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .result-title {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 64px;
+            font-weight: 900;
+            margin: 30px 0;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .result-message {
+            font-size: 22px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .result-btn {
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Leaderboard */
+        .leaderboard-screen {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .leaderboard-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .leaderboard-title {
+            font-size: 42px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .leaderboard-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 30px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease-out backwards;
+        }
+
+        .leaderboard-item:nth-child(1) { animation-delay: 0.1s; }
+        .leaderboard-item:nth-child(2) { animation-delay: 0.2s; }
+        .leaderboard-item:nth-child(3) { animation-delay: 0.3s; }
+        .leaderboard-item:nth-child(4) { animation-delay: 0.4s; }
+        .leaderboard-item:nth-child(5) { animation-delay: 0.5s; }
+
+        .leaderboard-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .leaderboard-rank {
+            font-size: 28px;
+            font-weight: 900;
+            width: 50px;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .leaderboard-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .leaderboard-date {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .leaderboard-score {
+            font-size: 32px;
+            font-weight: 900;
+        }
+
+        .back-btn {
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-5px);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            font-size: 20px;
+            opacity: 0.7;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 36px;
+            }
+
+            .welcome-text {
+                font-size: 18px;
+            }
+
+            .glass-card {
+                padding: 30px;
+            }
+
+            .question-card {
+                padding: 25px;
+            }
+
+            .question-text {
+                font-size: 20px;
+            }
+
+            .option-btn {
+                font-size: 16px;
+                padding: 15px 20px;
+            }
+
+            .result-title {
+                font-size: 32px;
+            }
+
+            .final-score {
+                font-size: 48px;
+            }
+
+            .leaderboard-title {
+                font-size: 32px;
+            }
+
+            .result-buttons {
+                flex-direction: column;
+            }
+
+            .result-btn {
+                width: 100%;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-wrapper">
+   <div class="background-blur">
+    <div class="blur-circle circle1"></div>
+    <div class="blur-circle circle2"></div>
+    <div class="blur-circle circle3"></div>
+   </div>
+   <div class="main-content"><!-- Start Screen -->
+    <div class="screen active" id="startScreen">
+     <div class="start-screen">
+      <div class="glass-card">
+       <h1 class="game-title" id="gameTitle">🎮 TKJ QUIZ MASTER 🎮</h1>
+       <p class="welcome-text" id="welcomeText">Uji Pengetahuan TKJ Kamu!</p>
+       <div class="input-group"><label class="input-label" for="playerName">Masukkan Nama Kamu</label> <input type="text" id="playerName" class="name-input" placeholder="Nama kamu..." maxlength="30">
+       </div><button class="start-btn" id="startBtn"> <span id="startButtonText">🚀 Mulai Quiz 🚀</span> </button>
+      </div>
+     </div>
+    </div><!-- Quiz Screen -->
+    <div class="screen" id="quizScreen">
+     <div class="quiz-screen">
+      <div class="quiz-header">
+       <div class="progress-info"><span id="currentQuestion">1</span> / <span id="totalQuestions">20</span>
+       </div>
+       <div class="score-display">
+        Score: <span id="scoreDisplay">0</span>
+       </div>
+      </div>
+      <div class="question-card">
+       <div class="question-text" id="questionText"></div>
+       <div class="options-container" id="optionsContainer"></div>
+      </div><button class="next-btn" id="nextBtn">Lanjut →</button>
+     </div>
+    </div><!-- Result Screen -->
+    <div class="screen" id="resultScreen">
+     <div class="result-screen">
+      <div class="result-card">
+       <div class="result-icon" id="resultIcon">
+        🏆
+       </div>
+       <h2 class="result-title" id="resultTitle">Selamat!</h2>
+       <div class="final-score" id="finalScore">
+        0 / 20
+       </div>
+       <p class="result-message" id="resultMessage">Kerja Bagus!</p>
+       <div class="result-buttons"><button class="result-btn" id="restartBtn">🔄 Main Lagi</button> <button class="result-btn" id="viewLeaderboardBtn">🏆 Lihat Ranking</button>
+       </div>
+      </div>
+     </div>
+    </div><!-- Leaderboard Screen -->
+    <div class="screen" id="leaderboardScreen">
+     <div class="leaderboard-screen">
+      <div class="leaderboard-card">
+       <h2 class="leaderboard-title">🏆 TOP PLAYERS 🏆</h2>
+       <div class="leaderboard-list" id="leaderboardList">
+        <div class="empty-message">
+         Memuat data...
+        </div>
+       </div><button class="back-btn" id="backBtn">← Kembali</button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        const defaultConfig = {
+            background_color: '#667eea',
+            surface_color: '#764ba2',
+            text_color: '#ffffff',
+            primary_action_color: '#f093fb',
+            secondary_action_color: '#4facfe',
+            game_title: '🎮 TKJ QUIZ MASTER 🎮',
+            welcome_text: 'Uji Pengetahuan TKJ Kamu!',
+            start_button: '🚀 Mulai Quiz 🚀'
+        };
+
+        const questions = [
+            {
+                question: "Apa kepanjangan dari TKJ?",
+                options: ["Teknik Komputer Jaringan", "Teknik Komputer dan Jaringan", "Teknologi Komputer Jaringan", "Teknik Komputasi Jaringan"],
+                correct: 1
+            },
+            {
+                question: "Topologi jaringan yang berbentuk cincin disebut?",
+                options: ["Star", "Bus", "Ring", "Mesh"],
+                correct: 2
+            },
+            {
+                question: "Protokol yang digunakan untuk mengirim email adalah?",
+                options: ["HTTP", "FTP", "SMTP", "TCP"],
+                correct: 2
+            },
+            {
+                question: "Perangkat yang berfungsi menghubungkan beberapa jaringan disebut?",
+                options: ["Switch", "Hub", "Router", "Bridge"],
+                correct: 2
+            },
+            {
+                question: "IP Address 192.168.1.1 termasuk kelas?",
+                options: ["Kelas A", "Kelas B", "Kelas C", "Kelas D"],
+                correct: 2
+            },
+            {
+                question: "Kabel UTP terdiri dari berapa pasang kabel?",
+                options: ["2 pasang", "4 pasang", "6 pasang", "8 pasang"],
+                correct: 1
+            },
+            {
+                question: "Susunan kabel straight pada standar T568B dimulai dengan warna?",
+                options: ["Putih Hijau", "Putih Orange", "Putih Biru", "Putih Coklat"],
+                correct: 1
+            },
+            {
+                question: "Perangkat yang berfungsi memperkuat sinyal jaringan adalah?",
+                options: ["Repeater", "Switch", "Hub", "Modem"],
+                correct: 0
+            },
+            {
+                question: "Apa kepanjangan dari LAN?",
+                options: ["Large Area Network", "Local Access Network", "Local Area Network", "Long Area Network"],
+                correct: 2
+            },
+            {
+                question: "Port default untuk HTTP adalah?",
+                options: ["21", "23", "80", "443"],
+                correct: 2
+            },
+            {
+                question: "OSI Layer terdiri dari berapa layer?",
+                options: ["5 layer", "6 layer", "7 layer", "8 layer"],
+                correct: 2
+            },
+            {
+                question: "Perintah untuk melihat konfigurasi IP di Windows adalah?",
+                options: ["ifconfig", "ipconfig", "netstat", "tracert"],
+                correct: 1
+            },
+            {
+                question: "Subnet mask default untuk kelas C adalah?",
+                options: ["255.0.0.0", "255.255.0.0", "255.255.255.0", "255.255.255.255"],
+                correct: 2
+            },
+            {
+                question: "Protokol yang digunakan untuk transfer file adalah?",
+                options: ["SMTP", "HTTP", "FTP", "DNS"],
+                correct: 2
+            },
+            {
+                question: "Firewall berfungsi untuk?",
+                options: ["Mempercepat koneksi", "Keamanan jaringan", "Menghubungkan jaringan", "Menyimpan data"],
+                correct: 1
+            },
+            {
+                question: "DHCP berfungsi untuk?",
+                options: ["Memberikan IP otomatis", "Menerjemahkan domain", "Transfer file", "Keamanan data"],
+                correct: 0
+            },
+            {
+                question: "Kecepatan maksimal kabel Cat5e adalah?",
+                options: ["10 Mbps", "100 Mbps", "1 Gbps", "10 Gbps"],
+                correct: 2
+            },
+            {
+                question: "Apa kepanjangan dari DNS?",
+                options: ["Domain Name System", "Domain Network System", "Data Name System", "Digital Name System"],
+                correct: 0
+            },
+            {
+                question: "Wireless security terbaik saat ini adalah?",
+                options: ["WEP", "WPA", "WPA2", "WPA3"],
+                correct: 3
+            },
+            {
+                question: "Perintah untuk melakukan ping ke Google adalah?",
+                options: ["ping google", "ping google.com", "ping www.google.com", "Semua benar"],
+                correct: 3
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playerName = '';
+        let leaderboardData = [];
+
+        const dataHandler = {
+            onDataChanged(data) {
+                leaderboardData = data.sort((a, b) => b.score - a.score);
+                if (document.getElementById('leaderboardScreen').classList.contains('active')) {
+                    renderLeaderboard();
+                }
+            }
+        };
+
+        async function onConfigChange(config) {
+            const backgroundColor = config.background_color || defaultConfig.background_color;
+            const surfaceColor = config.surface_color || defaultConfig.surface_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const primaryActionColor = config.primary_action_color || defaultConfig.primary_action_color;
+            const secondaryActionColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+            document.querySelector('.game-wrapper').style.background = `linear-gradient(135deg, ${backgroundColor} 0%, ${surfaceColor} 100%)`;
+
+            document.querySelectorAll('.blur-circle').forEach((circle, index) => {
+                if (index === 0) circle.style.background = primaryActionColor;
+                if (index === 1) circle.style.background = secondaryActionColor;
+                if (index === 2) circle.style.background = `linear-gradient(45deg, ${primaryActionColor}, ${secondaryActionColor})`;
+            });
+
+            document.querySelectorAll('.game-title, .welcome-text, .input-label, .progress-info, .score-display, .question-text, .result-title, .result-message, .leaderboard-title, .leaderboard-name, .leaderboard-score, .leaderboard-rank, .empty-message').forEach(el => {
+                el.style.color = textColor;
+            });
+
+            document.querySelector('.name-input').style.color = textColor;
+            document.querySelector('.name-input').style.setProperty('--placeholder-color', textColor);
+
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.style.color = textColor;
+            });
+
+            document.querySelector('.start-btn').style.background = `linear-gradient(45deg, ${primaryActionColor}, ${secondaryActionColor})`;
+            document.querySelector('.start-btn').style.color = textColor;
+            document.querySelector('.start-btn::before').style.background = surfaceColor;
+
+            document.querySelector('.next-btn').style.background = `linear-gradient(45deg, ${primaryActionColor}, ${secondaryActionColor})`;
+            document.querySelector('.next-btn').style.color = textColor;
+
+            document.querySelectorAll('.result-btn').forEach(btn => {
+                btn.style.background = `linear-gradient(45deg, ${primaryActionColor}, ${secondaryActionColor})`;
+                btn.style.color = textColor;
+            });
+
+            document.querySelector('.back-btn').style.background = surfaceColor;
+            document.querySelector('.back-btn').style.color = textColor;
+
+            document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+            document.getElementById('welcomeText').textContent = config.welcome_text || defaultConfig.welcome_text;
+            document.getElementById('startButtonText').textContent = config.start_button || defaultConfig.start_button;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = questions.length;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            document.getElementById('nextBtn').classList.remove('show');
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                }
+                if (index === selectedIndex && selectedIndex !== question.correct) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            if (selectedIndex === question.correct) {
+                score++;
+                document.getElementById('scoreDisplay').textContent = score;
+            }
+
+            document.getElementById('nextBtn').classList.add('show');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        async function showResults() {
+            const percentage = (score / questions.length) * 100;
+            let icon = '🏆';
+            let title = 'Selamat!';
+            let message = '';
+
+            if (percentage === 100) {
+                icon = '🥇';
+                title = 'SEMPURNA!';
+                message = 'Kamu Master TKJ sejati! 🎉';
+            } else if (percentage >= 80) {
+                icon = '🥈';
+                title = 'Luar Biasa!';
+                message = 'Pengetahuan TKJ kamu sangat baik! 👏';
+            } else if (percentage >= 60) {
+                icon = '🥉';
+                title = 'Bagus!';
+                message = 'Terus belajar dan kamu pasti bisa lebih baik! 💪';
+            } else {
+                icon = '📚';
+                title = 'Tetap Semangat!';
+                message = 'Jangan menyerah, terus belajar ya! 🔥';
+            }
+
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('finalScore').textContent = `${score} / ${questions.length}`;
+            document.getElementById('resultMessage').textContent = message;
+
+            if (window.dataSdk) {
+                const saveBtn = document.getElementById('viewLeaderboardBtn');
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="loading-spinner"></span> Menyimpan...';
+
+                const result = await window.dataSdk.create({
+                    player_name: playerName,
+                    score: score,
+                    total_questions: questions.length,
+                    completed_at: new Date().toISOString()
+                });
+
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '🏆 Lihat Ranking';
+
+                if (!result.isOk) {
+                    console.error('Gagal menyimpan score');
+                }
+            }
+
+            showScreen('resultScreen');
+        }
+
+        function renderLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (leaderboardData.length === 0) {
+                leaderboardList.innerHTML = '<div class="empty-message">Belum ada data pemain</div>';
+                return;
+            }
+
+            leaderboardList.innerHTML = '';
+            leaderboardData.slice(0, 10).forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                const date = new Date(player.completed_at);
+                const dateStr = date.toLocaleDateString('id-ID', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let rankEmoji = '🎖️';
+                if (index === 0) rankEmoji = '🥇';
+                else if (index === 1) rankEmoji = '🥈';
+                else if (index === 2) rankEmoji = '🥉';
+
+                item.innerHTML = `
+                    <div class="leaderboard-rank">${rankEmoji}</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">${player.player_name}</div>
+                        <div class="leaderboard-date">${dateStr}</div>
+                    </div>
+                    <div class="leaderboard-score">${player.score}/${player.total_questions}</div>
+                `;
+                
+                leaderboardList.appendChild(item);
+            });
+        }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const nameInput = document.getElementById('playerName');
+            playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                nameInput.style.borderColor = '#ef4444';
+                nameInput.placeholder = 'Nama harus diisi!';
+                return;
+            }
+
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('scoreDisplay').textContent = '0';
+            
+            showScreen('quizScreen');
+            loadQuestion();
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            document.getElementById('playerName').value = '';
+            showScreen('startScreen');
+        });
+
+        document.getElementById('viewLeaderboardBtn').addEventListener('click', () => {
+            showScreen('leaderboardScreen');
+            renderLeaderboard();
+        });
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            showScreen('resultScreen');
+        });
+
+        if (window.dataSdk) {
+            window.dataSdk.init(dataHandler).then(result => {
+                if (!result.isOk) {
+                    console.error('Gagal inisialisasi Data SDK');
+                }
+            });
+        }
+
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig: defaultConfig,
+                onConfigChange: onConfigChange,
+                mapToCapabilities: (config) => ({
+                    recolorables: [
+                        {
+                            get: () => config.background_color || defaultConfig.background_color,
+                            set: (value) => {
+                                window.elementSdk.config.background_color = value;
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.surface_color || defaultConfig.surface_color,
+                            set: (value) => {
+                                window.elementSdk.config.surface_color = value;
+                                window.elementSdk.setConfig({ surface_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.text_color || defaultConfig.text_color,
+                            set: (value) => {
+                                window.elementSdk.config.text_color = value;
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                            set: (value) => {
+                                window.elementSdk.config.primary_action_color = value;
+                                window.elementSdk.setConfig({ primary_action_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                            set: (value) => {
+                                window.elementSdk.config.secondary_action_color = value;
+                                window.elementSdk.setConfig({ secondary_action_color: value });
+                            }
+                        }
+                    ],
+                    borderables: [],
+                    fontEditable: undefined,
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ['game_title', config.game_title || defaultConfig.game_title],
+                    ['welcome_text', config.welcome_text || defaultConfig.welcome_text],
+                    ['start_button', config.start_button || defaultConfig.start_button]
+                ])
+            });
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a6a8385e430f8f0',t:'MTc2NDUwNzQ4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
